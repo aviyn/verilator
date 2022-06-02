@@ -125,6 +125,8 @@ class CMakeEmitter final {
         *of << "# FST Tracing output mode? 0/1 (from --trace-fst)\n";
         cmake_set_raw(*of, name + "_TRACE_FST",
                       (v3Global.opt.trace() && v3Global.opt.traceFormat().fst()) ? "1" : "0");
+        *of << "# Python output mode?  0/1 (from --python)\n";
+        cmake_set_raw(*of, name + "_PYTHON", v3Global.opt.python()?"1":"0");
 
         *of << "\n### Sources...\n";
         std::vector<string> classes_fast;
@@ -182,6 +184,13 @@ class CMakeEmitter final {
         if (!v3Global.opt.libCreate().empty()) {
             global.emplace_back(v3Global.opt.makeDir() + "/" + v3Global.opt.libCreate() + ".cpp");
         }
+        if (v3Global.opt.python()) {
+            global.push_back("${VERILATOR_ROOT}/include/verilated_py.cpp");
+        }
+        // AVI: not sure if needed 
+        //if (!v3Global.opt.protectLib().empty()) {
+        //    global.push_back(v3Global.opt.makeDir()+"/"+v3Global.opt.protectLib()+".cpp");
+        //}
 
         *of << "# Global classes, need linked once per executable\n";
         cmake_set_raw(*of, name + "_GLOBAL", deslash(cmake_list(global)));

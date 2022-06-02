@@ -274,7 +274,21 @@ public:
 // Functions overridable by user defines
 // (Internals however must use VL_PRINTF_MT, which calls these.)
 
+#ifdef VL_PYTHON
+namespace vl_py {
+int vl_printf(const char* , ...);
+int vl_vprintf(const char* fmt, va_list args);
+}
+
 // clang-format off
+#ifndef VL_PRINTF
+# define VL_PRINTF ::vl_py::vl_printf
+#endif
+#ifndef VL_VPRINTF
+# define VL_VPRINTF ::vl_py::vl_vprintf
+#endif
+#endif
+
 #ifndef VL_PRINTF
 # define VL_PRINTF printf  ///< Print ala printf, called from main thread; redefine if desired
 #endif

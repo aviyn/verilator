@@ -474,6 +474,7 @@ public:
     bool profPgo() const { return m_profPgo; }
     bool usesProfiler() const { return profExec() || profPgo(); }
     bool protectIds() const { return m_protectIds; }
+    bool python() const { return m_python; }
     bool allPublic() const { return m_public; }
     bool publicFlatRW() const { return m_publicFlatRW; }
     bool lintOnly() const { return m_lintOnly; }

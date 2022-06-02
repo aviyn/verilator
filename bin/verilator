@@ -379,6 +379,7 @@ detailed descriptions of these arguments.
     --public                    Debugging; see docs
     --public-flat-rw            Mark all variables, etc as public_flat_rw
      -pvalue+<name>=<value>     Overwrite toplevel parameter
+    --python                    Generate python bindings
     --quiet-exit                Don't print the command on failure
     --relative-includes         Resolve includes relative to current file
     --reloop-limit              Minimum iterations for forming loops

@@ -47,6 +47,7 @@
 #include "V3EmitCMain.h"
 #include "V3EmitCMake.h"
 #include "V3EmitMk.h"
+#include "V3EmitPy.h"
 #include "V3EmitV.h"
 #include "V3EmitXml.h"
 #include "V3Expand.h"
@@ -547,8 +548,13 @@ static void process() {
 
     if (v3Global.opt.stats()) V3Stats::statsStage("emit");
 
+<<<<<<< HEAD
     // Statistics
     reportStatsIfEnabled();
+
+    if (v3Global.opt.python()) {
+        V3EmitPy::emitpy();
+    }
 
     if (!v3Global.opt.lintOnly() && !v3Global.opt.xmlOnly() && !v3Global.opt.dpiHdrOnly()) {
         // Makefile must be after all other emitters
@@ -726,6 +732,13 @@ int main(int argc, char** argv, char** env) {
     // Validate settings (aka Boost.Program_options)
     v3Global.opt.notify();
     v3Global.rootp()->timeInit();
+
+
+    if (v3Global.opt.python()) {
+        if (v3Global.opt.systemC()) {
+            v3fatal("SystemC does not support python\n");
+        }
+    }
 
     V3Error::abortIfErrors();
 
