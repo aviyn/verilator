@@ -548,7 +548,6 @@ static void process() {
 
     if (v3Global.opt.stats()) V3Stats::statsStage("emit");
 
-<<<<<<< HEAD
     // Statistics
     reportStatsIfEnabled();
 

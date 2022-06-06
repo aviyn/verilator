@@ -261,6 +261,7 @@ private:
     bool m_protectIds = false;      // main switch: --protect-ids
     bool m_public = false;          // main switch: --public
     bool m_publicFlatRW = false;    // main switch: --public-flat-rw
+    bool m_python = false;          // main switch: --python
     bool m_quietExit = false;       // main switch: --quiet-exit
     bool m_relativeIncludes = false; // main switch: --relative-includes
     bool m_reportUnoptflat = false; // main switch: --report-unoptflat

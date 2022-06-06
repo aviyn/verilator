@@ -118,7 +118,6 @@ INFOS = verilator.html verilator.pdf
 
 INFOS_OLD = README README.html README.pdf
 
-
 EXAMPLES_FIRST = \
 	examples/make_hello_c \
 	examples/make_hello_sc \

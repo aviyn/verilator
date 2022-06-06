@@ -205,6 +205,7 @@ class VerilatedMutex final {
 public:
     void lock() {}  // LCOV_EXCL_LINE
     void unlock() {}  // LCOV_EXCL_LINE
+    bool try_lock() { return true; } // LCOV_EXCL_LINE
 };
 
 // Empty non-threaded lock guard to avoid #ifdefs in consuming code

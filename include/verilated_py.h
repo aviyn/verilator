@@ -79,30 +79,40 @@ struct port_type<T, false> {
 
 #define _VL_PY_ABS(X) ((X)>=0?(X):-(X))
 
+// #define _VL_PY_PORT_READ(n, p, msb, lsb, s) \
+//     [](n& module) { \
+//         auto r = static_cast<::vl_py::impl::port_type<decltype(n::p), s>::type>(module.p); \
+//         if (s) { /* Sign extend */ \
+//             struct { decltype(r) v : _VL_PY_ABS(msb-lsb+1); } sxt { r }; \
+//             return sxt.v; \
+//         } \
+//         return r; \
+//     }
+// #define _VL_PY_PORT_WRITE(n, p, msb, lsb, s) \
+//     [](n& module, py::int_ value) { \
+//         if (!s) { \
+//             if (_PyLong_Sign(value.ptr()) < 0) {\
+//                 throw std::invalid_argument("Cannot assign a negative value to an unsigned port"); return; \
+//             } \
+//         } \
+//         module.p = static_cast<::vl_py::impl::port_type<decltype(n::p), s>::type>(value); \
+//         if (PyErr_Occurred()) { \
+//             throw py::error_already_set(); \
+//         } \
+//     }
+
 #define _VL_PY_PORT_READ(n, p, msb, lsb, s) \
     [](n& module) { \
-        auto r = static_cast<::vl_py::impl::port_type<decltype(n::p), s>::type>(module.p); \
-        if (s) { /* Sign extend */ \
-            struct { decltype(r) v : _VL_PY_ABS(msb-lsb); } sxt { r }; \
-            return sxt.v; \
-        } \
+        auto r = module.p; \
         return r; \
     }
 #define _VL_PY_PORT_WRITE(n, p, msb, lsb, s) \
     [](n& module, py::int_ value) { \
-        if (!s) { \
-            if (_PyLong_Sign(value.ptr()) < 0) {\
-                throw std::invalid_argument("Cannot assign a negative value to an unsigned port"); return; \
-            } \
-        } \
-        module.p = static_cast<::vl_py::impl::port_type<decltype(n::p), s>::type>(value); \
-        if (PyErr_Occurred()) { \
-            throw py::error_already_set(); \
-        } \
+        module.p = value; \
     }
 
 #define _VL_PY_PORT_READ_W(n, p, msb, lsb, s) \
-    [](const n& module) {return ::vl_py::impl::read_port(module.p, _VL_PY_ABS(msb-lsb), s);}
+    [](const n& module) {return ::vl_py::impl::read_port(module.p, _VL_PY_ABS(msb-lsb+1), s);}
 #define _VL_PY_PORT_WRITE_W(n, p, msb, lsb, s) \
     [](n& module, py::int_ value) { \
         if (!s) { \
@@ -110,15 +120,22 @@ struct port_type<T, false> {
                 throw std::invalid_argument("Cannot assign a negative value to an unsigned port"); return; \
             } \
         } \
-        ::vl_py::impl::write_port(module.p, _VL_PY_ABS(msb-lsb), value, s);; \
+        ::vl_py::impl::write_port(module.p, _VL_PY_ABS(msb-lsb+1), value, s);; \
     }
 
-#define VL_PY_MODULE(m, t) pybind11::class_<t, VerilatedModule>(m, #t, py::module_local{}) \
+//AVI-> #define VL_PY_MODULE(m, t) pybind11::class_<t, VerilatedModule>(m, #t, py::module_local{})
+
+#define VL_PY_MODULE(m, t) pybind11::class_<t>(m, #t, py::module_local{}) \
                             .def(pybind11::init<const char*>(), pybind11::arg("name") = #t)
 
 #define VL_PY_INPORT(n, p, msb, lsb, s) .def_property(#p, _VL_PY_PORT_READ(n, p, msb, lsb, s), _VL_PY_PORT_WRITE(n, p, msb, lsb, s))
 #define VL_PY_OUTPORT(n, p, msb, lsb, s) .def_property_readonly(#p, _VL_PY_PORT_READ(n, p, msb, lsb, s))
 #define VL_PY_INOUTPORT(n, p, msb, lsb, s) .def_property(#p, _VL_PY_PORT_READ(n, p, msb, lsb, s), _VL_PY_PORT_WRITE(n, p, msb, lsb, s))
+
+//AVI-> the following does not work as signals are defined as reference and we cant take a pointer of a reference.
+// #define VL_PY_INPORT(n, p, msb, lsb, s) .def_readwrite(#p, &n::p)
+// #define VL_PY_OUTPORT(n, p, msb, lsb, s) .def_readonly(#p, &n::p)
+// #define VL_PY_INOUTPORT(n, p, msb, lsb, s) .def_readwrite(#p, &n::p)
 
 #define VL_PY_INPORT_W(n, p, msb, lsb, s) .def_property(#p, _VL_PY_PORT_READ_W(n, p, msb, lsb, s), _VL_PY_PORT_WRITE_W(n, p, msb, lsb, s))
 #define VL_PY_OUTPORT_W(n, p, msb, lsb, s) .def_property_readonly(#p, _VL_PY_PORT_READ_W(n, p, msb, lsb, s))

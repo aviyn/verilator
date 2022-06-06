@@ -34,6 +34,9 @@
 #include <utility>
 #include <vector>
 
+// Legacy function required only so linking works on Cygwin and MSVC++
+double sc_time_stamp() { return 0; }
+
 #pragma GCC visibility push(hidden)
 
 namespace py = pybind11;
@@ -189,12 +192,11 @@ static void vl_callback_flush() {
 static void set_callback(py::module m, py::object obj) {
     if (obj.is_none()) {
          s_vl_callback = m.attr("VerilatedCallback")();
-         Verilated::flushCb(vl_callback_flush);
+//FIXME:         Verilated::flushCb(vl_callback_flush);
     } else {
         s_vl_callback = obj;
     }
 }
-
 
 namespace impl {
 
@@ -232,7 +234,7 @@ void declare_globals(py::module& m) {
             ex(e.what());
         }
     });
-
+    
     py::class_<VLCallback, PyVLCallback, std::shared_ptr<VLCallback>> vl_class_callback(m, "VerilatedCallback", py::module_local{});
     vl_class_callback
         .def(py::init<>())
@@ -307,20 +309,22 @@ void declare_globals(py::module& m) {
         [](py::object) {return Verilated::fatalOnVpiError();},
         [](py::object, bool v) { Verilated::fatalOnVpiError(v);});
     attr_doc(vl_class_verilated, "assertions", "Enable/disable vpi fatal");
-    vl_class_verilated.def_property_static("profiling_threads_start",
+    //AVI-> the methods below are now in VerilatedContext.
+    //Expose context class to allow access
+    /* vl_class_verilated.def_property_static("profiling_threads_start",
         [](py::object) {return Verilated::profThreadsStart();},
         [](py::object, vluint64_t v) { Verilated::profThreadsStart(v);});
     attr_doc(vl_class_verilated, "profiling_threads_start", "When using --prof-threads, Verilator will wait until this time,\n"
-        "    then start the profiling warmup. Set to 0 to disable threads profiling.");
-    vl_class_verilated.def_property_static("profiling_threads_window",
+        "    then start the profiling warmup. Set to 0 to disable threads profiling."); */
+    /* vl_class_verilated.def_property_static("profiling_threads_window",
         [](py::object) {return Verilated::profThreadsWindow();},
         [](py::object, vluint64_t v) { Verilated::profThreadsWindow(v);});
     attr_doc(vl_class_verilated, "profiling_threads_window", "When using --prof-threads, Verilator will warm up the profiling\n"
-        "    for this number of eval() calls, then will capture the profiling of this number of eval() calls.");
-    vl_class_verilated.def_property_static("profiling_threads_filename",
+        "    for this number of eval() calls, then will capture the profiling of this number of eval() calls."); */
+    /* vl_class_verilated.def_property_static("profiling_threads_filename",
         [](py::object) {return Verilated::profThreadsFilenamep();},
         [](py::object, const char* v) { Verilated::profThreadsFilenamep(v);});
-    attr_doc(vl_class_verilated, "profiling_threads_filename", "When using --prof-threads, the filename to dump to.");
+    attr_doc(vl_class_verilated, "profiling_threads_filename", "When using --prof-threads, the filename to dump to."); */
     vl_class_verilated.def_property_readonly_static("product_name",
         [](py::object) {return Verilated::productName();});
     attr_doc(vl_class_verilated, "product_name", "Product name for (at least) VPI");
@@ -350,7 +354,12 @@ void declare_globals(py::module& m) {
             }
             Verilated::commandArgs(impl::args_buffer.c_strings.size(), impl::args_buffer.c_strings.data());
         });
-    vl_class_verilated.def_property_readonly_static("arguments", [](py::object) {
+    vl_class_verilated.def_static("timeInc", &Verilated::timeInc);
+
+    vl_class_verilated.def_property_static("time",
+        [](py::object) {return Verilated::time();},
+        [](py::object, uint64_t v) { Verilated::time(v);});
+    /* vl_class_verilated.def_property_readonly_static("arguments", [](py::object) {
         std::vector<std::string> result;
         const auto vl_args = Verilated::getCommandArgs();
         result.reserve(vl_args->argc);
@@ -358,7 +367,7 @@ void declare_globals(py::module& m) {
             result.push_back(vl_args->argv[arg_i]);
         }
         return result;
-    });
+    }); */
 
 #if VM_TRACE_VCD
     py::class_<VerilatedVcdC> vl_class_verilated_vcd_c(m, "VerilatedVcd", py::module_local{});

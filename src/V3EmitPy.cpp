@@ -89,9 +89,11 @@ class PythonEmitter {
                 ofp->puts(", ");
                 ofp->puts(nodep->name());
                 ofp->puts(", ");
-                ofp->puts(cvtToStr(basicp->lsb() + basicp->width()));
+                //AVI-> ofp->puts(cvtToStr(basicp->lsb() + basicp->width()));
+                ofp->puts(cvtToStr(basicp->hi()));
                 ofp->puts(", ");
-                ofp->puts(cvtToStr(basicp->lsb()));
+                //AVI-> ofp->puts(cvtToStr(basicp->lsb()));
+                ofp->puts(cvtToStr(basicp->lo()));
                 ofp->puts(", ");
                 ofp->puts(varp->isSigned()? "true" : "false");
                 ofp->puts(")\n");
@@ -102,9 +104,11 @@ class PythonEmitter {
             }
             // Export public functions
             const AstCFunc* funcp = VN_CAST(nodep, CFunc);
-            if (funcp && !funcp->skipDecl() && !funcp->dpiImport() && funcp->funcPublic()) {
+            //AVI-> if (funcp && !funcp->skipDecl() && !funcp->dpiImport() && funcp->funcPublic()) {
+            if (funcp && /*AVI-> !funcp->skipDecl() &&*/ !funcp->dpiImportPrototype() && !funcp->dpiImportWrapper() && funcp->funcPublic()) {
                 if (funcp->ifdef()!="") ofp->puts("#ifdef "+funcp->ifdef()+"\n");
-                ofp->puts((funcp->isStatic().trueU() ? "VL_PY_FUNC_STATIC(" : "VL_PY_FUNC("));
+                //AVI-> ofp->puts((funcp->isStatic().trueU() ? "VL_PY_FUNC_STATIC(" : "VL_PY_FUNC("));
+                ofp->puts((funcp->isStatic() ? "VL_PY_FUNC_STATIC(" : "VL_PY_FUNC("));
                 ofp->puts(v3Global.opt.prefix()+", " + funcp->name() + ")\n");
                 if (funcp->ifdef()!="") ofp->puts("#endif  // "+funcp->ifdef()+"\n");
             }
@@ -116,10 +120,11 @@ class PythonEmitter {
         if (v3Global.opt.trace()) {
             ofp->puts("VL_PY_FUNC_TRACE("+v3Global.opt.prefix()+")\n");
         }
-
-        if (v3Global.opt.inhibitSim()) {
-            ofp->puts("VL_PY_FUNC("+v3Global.opt.prefix()+", inhibitSim)\n");
-        }
+        
+        // AVI -> no inhibitSim option
+        //if (v3Global.opt.inhibitSim()) {
+        //    ofp->puts("VL_PY_FUNC("+v3Global.opt.prefix()+", inhibitSim)\n");
+        //}
 
         ofp->puts(";");
         ofp->indentDec();
